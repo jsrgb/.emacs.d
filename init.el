@@ -1,4 +1,4 @@
-;;; .emacs
+;;; .emacs for terminal
 ;;; Commentary
 ;;; Code:
 
@@ -7,7 +7,7 @@
 
 (setq default-frame-alist
       '((fullscreen . maximized)
-        (font . "Terminus (TTF)-16")
+        (font . "Lilex-16")
         (vertical-scroll-bars . nil)))
 
 (setq backup-directory-alist '(("." . "~/.emacsbackups")))
@@ -36,7 +36,9 @@
     (setq pkg-refreshed t)
     (package-refresh-contents))
   (when (not (package-installed-p package))
-   (package-install package)))
+    (package-install package)))
+
+(load-theme 'zenburn t)
 
 ;;;
 ;;; Defaults
@@ -50,7 +52,6 @@
 (fset 'yes-or-no-p 'y-or-n-p)
 (delete-selection-mode t)
 (fringe-mode '(10 . 0))
-(global-hl-line-mode)
 (setq inhibit-startup-screen t
       initial-scratch-message nil
       ring-bell-function 'ignore
@@ -64,55 +65,42 @@
               indent-tabs-mode nil
               tab-width 4)
 
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 6))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-expression (read (current-buffer)))))
-  (load bootstrap-file nil 'nomessage))
-
-;; Install and configure use-package
-(straight-use-package 'use-package)
-(use-package straight
-  :custom (straight-use-package-by-default t))
-
-;;
-;; Local packages
-;;
-(add-to-list 'load-path "~/.emacs.d/custom/")
-
-(pm/use 'base16-theme)
-(load-theme 'vs-light t)
-
 (setq native-comp-async-report-warnings-errors 'silent)
 
 (setopt display-fill-column-indicator-column 80)
 (add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
 
-;;;
-;;; OS Specific
-;;;
-(defvar cfg-loc "")
-(set-frame-font "Terminus (TTF) 16" nil t)
+(setq display-line-numbers-type 'absolute)
+(global-display-line-numbers-mode +1)
 
-(when (eq system-type 'windows-nt)
-  (set-face-attribute 'default nil :font "Consolas-12")
-  (setq cfg-loc "C:/Users/ja/AppData/Roaming/.emacs.d/init.el")
-  (setq default-directory "C:/Workspace/"))
+(pm/use 'rg)
+(rg-enable-default-bindings)
 
-(when (eq system-type 'darwin)
-  (setq mac-command-modifier 'meta)
-  (setq cfg-loc "~/.emacs.d/init.el"))
-  
-(when (eq system-type 'gnu/linux)
-  (setq cfg-loc "~/.emacs.d/init.el")
-  (set-face-attribute 'default nil :font "Hack-12"))
+(global-set-key (kbd "C-c r") (lambda () (interactive) (recompile)))
+(global-set-key (kbd "C-c `") 'next-error)
+
+(use-package vertico
+  :ensure t
+  :init (vertico-mode 1))
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   '("806dd05c68b646416d686fc45d1ed7e6a173511e2548cd62150473fe5149f66c"
+     default))
+ '(package-selected-packages
+   '(consult exec-path-from-shell glsl-mode json-mode lua-mode magit
+             move-text multiple-cursors rg rust-mode typescript-mode
+             vertico wgsl-mode yaml-mode zenburn-theme zig-mode)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
 
 ;;;
 ;;; Window and Layout Handling
@@ -153,6 +141,7 @@
 (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
 (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
 
+
 (pm/use 'move-text)
 (move-text-default-bindings)
 
@@ -176,6 +165,7 @@
 (pm/use 'wgsl-mode)
 (pm/use 'glsl-mode)
 (pm/use 'zig-mode)
+(pm/use 'rust-mode)
 
 (defun js-ts-indent ()
   (setq-local tab-width 2)
@@ -189,78 +179,13 @@
 (pm/use 'typescript-mode)
 
 ;;;
-;;; Projects
-
-;;;
-;;; Compilation
-;;;
-(global-set-key (kbd "C-c r") (lambda () (interactive) (recompile)))
-(global-set-key (kbd "C-c `") 'next-error)
-
-;;;
-;;; Misc
-;;;
-(defun cfg ()
-  "Open the `.emacs` or `init.el`."
-  (interactive)
-  (find-file cfg-loc))
-
-;;;
 ;;; UI
 ;;;
-(pm/use 'icomplete-vertical)
-(fido-mode t)
-(icomplete-vertical-mode t)
-
-(global-set-key (kbd "C-;") 'ido-switch-buffer)
-
 
 (pm/use 'which-key)
 (which-key-mode)
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   '("dea106ab256a8017a325f51f01b1131915989fa25db48eb831ffb18dac8ecd39"
-     "fbf73690320aa26f8daffdd1210ef234ed1b0c59f3d001f342b9c0bbf49f531c"
-     "2e7dc2838b7941ab9cabaa3b6793286e5134f583c04bde2fba2f4e20f2617cf7"
-     "f5f070872db3e4d8b82dbb2f3b1c60beca86fc93327a38ebddd22070458a14bc"
-     "a12f585b1ff1b35f4000eab71f9f20a784b94f797296de13d467f9b3021b9a8b"
-     "e338de851db9cb260207b8b7246761585e79a489c7750110e01c10e216af495f"
-     "76c92281dc2f878bce2ab4b4466f76afda48c1ed95dfb3a97da31df39b21491d"
-     "882d6a5981fd85d9f987d31623e25e69b8d5635a53ab442f1a51e7c252790320"
-     "308ead333d5dfc7d64258a9d3d46f9e479e4b62bdf33a8ea8700423842cae32e"
-     "6ed98f47da7556a8ce6280346e5d8e1e25bede71dc5186aa2654b93bec42d2a6"
-     "1f82b7df8a4ce0e2ba3b0217d2c552b2fe5b5dd1244481cb65bef733f9818c63"
-     "d8b8c09a745470f6c088dce5df19ade98894f4ced69ce32d53aded94d512826d"
-     "623e9fe0532cc3a0bb31929b991a16f72fad7ad9148ba2dc81e395cd70afc744"
-     "e8915dac580af7a4a57bd38a0638a5a7714b47714529b1a66bd19e7aa155818d"
-     default))
- '(dape-key-prefix [24 1] t)
- '(eglot-ignored-server-capabilities
-   '(:hoverProvider :completionProvider :signatureHelpProvider
-                    :codeActionProvider :codeLensProvider
-                    :documentFormattingProvider
-                    :documentRangeFormattingProvider
-                    :documentOnTypeFormattingProvider
-                    :documentLinkProvider :foldingRangeProvider
-                    :inlayHintProvider))
- '(package-selected-packages
-   '(amx base16-theme bufferlo dap-mode expand-region go-mode gptel
-         icomplete-vertical json-mode llm magit markdown-mode
-         move-text multiple-cursors request twittering-mode
-         vs-light-theme which-key whiteboard yaml-mode zig-mode))
- '(persp-modestring-short t)
- '(persp-show-modestring t))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+(setq gc-cons-threshold (* 100 1024 1024))
 
 ;;
 ;; LSP
@@ -270,9 +195,12 @@
 (add-hook 'prog-mode-hook 'eglot-ensure)
 
 (with-eval-after-load 'eglot
+  (advice-add 'jsonrpc--log-event :override #'ignore)
   (add-to-list 'eglot-server-programs
                '((typescript-mode tsx-ts-mode typescript-ts-mode)
-                 . ("vtsls" "--stdio"))))
+                 . ("vtsls" "--stdio"))
+               '((rust-ts-mode rust-mode) .
+               ("rust-analyzer" :initializationOptions (:check (:command "check"))))))
 
 ;;
 ;; Flymake
@@ -280,61 +208,13 @@
 (global-set-key (kbd "C-c e b") 'flymake-show-buffer-diagnostics)
 (global-set-key (kbd "C-c e p") 'flymake-show-project-diagnostics)
 
-;;
-;; Org
-;;
-(load-file "~/.emacs.d/om.el")
-(pm/use 'bufferlo)
 
-;;
-;; Debug
-;;
-(pm/use 'dape)
-(setq dape-buffer-window-arrangement 'right)
-(setq dape-key-prefix (kbd "C-x C-a"))
-
-;;
-;; Kill-ring
-;;
-(pm/use 'browse-kill-ring)
-(global-unset-key (kbd " M-y"))
-(global-set-key (kbd " M-y") 'browse-kill-ring)
-
-(add-to-list 'exec-path "/Users/j/.local/bin")
-
-;;
-;; LLMs
-;;
-(global-unset-key (kbd "<C-wheel-up>"))
-(global-unset-key (kbd "<C-wheel-down>"))
-
-(setq straight-repository-branch "develop")
-
-(setq display-line-numbers-type 'relative)
-(global-display-line-numbers-mode +1)
-
-(load-file "~/.emacs.d/ellm.el")
-(setq warning-minimum-level :error)
-
-(pm/use 'rg)
-(rg-enable-default-bindings)
-
-;; Basic org-roam setup - just the essentials
-(use-package org-roam
+(use-package consult
   :ensure t
-  :custom
-  (org-roam-directory "~/Workspace/notes")
-  :bind (("C-c n f" . org-roam-node-find)
-         ("C-c n i" . org-roam-node-insert))
+  :bind
   :config
-  (org-roam-setup))
-
-(use-package org-roam-ui
-  :ensure t
-  :after org-roam
-  :config
-  (setq org-roam-ui-sync-theme t
-        org-roam-ui-follow t
-        org-roam-ui-update-on-save t))
-
-(load "~/.emacs.d/odin-mode.el")
+  (global-set-key (kbd "M-p") 'consult-fd)
+  (global-set-key (kbd "M-O") 'consult-imenu)
+  (global-set-key (kbd "M-F") 'consult-ripgrep)
+  (global-set-key (kbd "M-s") 'consult-line)
+  )
