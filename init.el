@@ -7,8 +7,9 @@
 
 (setq default-frame-alist
       '((fullscreen . maximized)
-        (font . "Lilex-16")
+        (font . "Iosevka-18")
         (vertical-scroll-bars . nil)))
+
 
 (setq backup-directory-alist '(("." . "~/.emacsbackups")))
 
@@ -21,8 +22,8 @@
         ))
 (package-initialize)
 
-(when (memq window-system '(mac ns x))
-  (exec-path-from-shell-initialize))
+
+
 ;; (exec-path-from-shell-initialize)
 ;; (exec-path-from-shell-copy-envs '("PATH"))
 ;; (setenv "LIBRARY_PATH" "/opt/homebrew/lib")
@@ -39,6 +40,11 @@
     (package-refresh-contents))
   (when (not (package-installed-p package))
     (package-install package)))
+
+(pm/use 'exec-path-from-shell)
+
+(when (memq window-system '(mac ns x))
+  (exec-path-from-shell-initialize))
 
 ;;;
 ;;; Defaults
@@ -66,24 +72,6 @@
               indent-tabs-mode nil
               tab-width 4)
 
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 6))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-expression (read (current-buffer)))))
-  (load bootstrap-file nil 'nomessage))
-
-;; Install and configure use-package
-(straight-use-package 'use-package)
-(use-package straight
-  :custom (straight-use-package-by-default t))
-
 ;;
 ;; Local packages
 ;;
@@ -110,7 +98,7 @@
   (setq default-directory "C:/Workspace/"))
 
 (when (eq system-type 'darwin)
-  (set-face-attribute 'default nil :font "Lilex-16")
+  (set-face-attribute 'default nil :font "Iosevka-18")
   (setq mac-command-modifier 'meta)
   (setq cfg-loc "~/.emacs.d/init.el"))
 
@@ -118,8 +106,7 @@
   (setq cfg-loc "~/.emacs.d/init.el")
   (set-face-attribute 'default nil :font "Hack-12"))
 
-(global-set-key (kbd "C-i") 'xref-go-forward)
-(global-set-key (kbd "C-o") 'xref-go-back)
+
 
 ;;;
 ;;; Window and Layout Handling
@@ -220,43 +207,6 @@
 (pm/use 'which-key)
 (which-key-mode)
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   '("1cfbec19edafb831c7729be2f6454ec019c21b9a54b39b3bb5ec276a6b21d484"
-     "df3d4f912f543ea8455e446f23c5d4d7ce76d01776a0a7239b444d73a2fc5184"
-     "712dda0818312c175a60d94ba676b404fc815f8c7e6c080c9b4061596c60a1db"
-     "dea106ab256a8017a325f51f01b1131915989fa25db48eb831ffb18dac8ecd39"
-     "fbf73690320aa26f8daffdd1210ef234ed1b0c59f3d001f342b9c0bbf49f531c"
-     "2e7dc2838b7941ab9cabaa3b6793286e5134f583c04bde2fba2f4e20f2617cf7"
-     "f5f070872db3e4d8b82dbb2f3b1c60beca86fc93327a38ebddd22070458a14bc"
-     "a12f585b1ff1b35f4000eab71f9f20a784b94f797296de13d467f9b3021b9a8b"
-     "e338de851db9cb260207b8b7246761585e79a489c7750110e01c10e216af495f"
-     "76c92281dc2f878bce2ab4b4466f76afda48c1ed95dfb3a97da31df39b21491d"
-     "882d6a5981fd85d9f987d31623e25e69b8d5635a53ab442f1a51e7c252790320"
-     "308ead333d5dfc7d64258a9d3d46f9e479e4b62bdf33a8ea8700423842cae32e"
-     "6ed98f47da7556a8ce6280346e5d8e1e25bede71dc5186aa2654b93bec42d2a6"
-     "1f82b7df8a4ce0e2ba3b0217d2c552b2fe5b5dd1244481cb65bef733f9818c63"
-     "d8b8c09a745470f6c088dce5df19ade98894f4ced69ce32d53aded94d512826d"
-     "623e9fe0532cc3a0bb31929b991a16f72fad7ad9148ba2dc81e395cd70afc744"
-     "e8915dac580af7a4a57bd38a0638a5a7714b47714529b1a66bd19e7aa155818d"
-     default))
- '(dape-key-prefix [24 1] t)
- '(eglot-ignored-server-capabilities
-   '(:hoverProvider :signatureHelpProvider :codeActionProvider
-                    :codeLensProvider :documentLinkProvider
-                    :foldingRangeProvider :inlayHintProvider))
- '(flycheck-check-syntax-automatically '(save idle-change mode-enabled))
- '(package-selected-packages
-   '(amx base16-theme bufferlo dap-mode expand-region go-mode gptel
-         icomplete-vertical json-mode llm magit markdown-mode
-         move-text multiple-cursors request twittering-mode
-         vs-light-theme which-key whiteboard yaml-mode zig-mode))
- '(persp-modestring-short t)
- '(persp-show-modestring t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -281,6 +231,10 @@
                '((rust-ts-mode rust-mode) .
                  ("rust-analyzer" :initializationOptions (:check (:command "check"))))))
 
+(with-eval-after-load 'flymake
+  ;; Do NOT extend diagnostics to whole defun
+  (setq flymake-diagnostic-function 'flymake-diag-region))
+
 (cl-defmethod eglot-handle-notification :after
   (_server (_method (eql textDocument/publishDiagnostics)) &key uri
            &allow-other-keys)
@@ -302,7 +256,7 @@
 ;; Org
 ;;
 (load-file "~/.emacs.d/om.el")
-(pm/use 'bufferlo)
+;;(pm/use 'bufferlo)
 
 ;;
 ;; Debug
@@ -326,12 +280,10 @@
 (global-unset-key (kbd "<C-wheel-up>"))
 (global-unset-key (kbd "<C-wheel-down>"))
 
-(setq straight-repository-branch "develop")
 
 (setq display-line-numbers-type 'relative)
 (global-display-line-numbers-mode +1)
 
-(load-file "~/.emacs.d/ellm.el")
 (setq warning-minimum-level :error)
 
 (pm/use 'rg)
@@ -355,23 +307,11 @@
         org-roam-ui-follow t
         org-roam-ui-update-on-save t))
 
-(load "~/.emacs.d/odin-mode.el")
+;; (load "~/.emacs.d/odin-mode.el")
 
 (use-package vertico
   :ensure t
   :init (vertico-mode 1))
-
-(use-package vertico-posframe
-  :ensure t
-  :after vertico
-  :config
-  (setq vertico-posframe-border-width 2)
-  :init (vertico-posframe-mode 1))
-
-(setq vertico-multiform-commands
-      '((consult-ripgrep (:not posframe))
-        (consult-line (:not posframe))
-        (t posframe)))
 
 (use-package orderless
   :ensure t
@@ -421,3 +361,18 @@
 (global-set-key (kbd "C-c g b") #'blamer-mode)
 (pm/use 'diff-hl)
 (global-set-key (kbd "C-c g d") #'diff-hl-mode)
+
+(global-set-key (kbd "C-i") 'xref-go-forward)
+(global-set-key (kbd "C-o") 'xref-go-back)
+
+
+(setq-default line-spacing 3)
+(setq-default cursor-type '(box . 100))
+(setq-default hl-line-sticky-flag t)
+
+(load-file "~/.emacs.d/wm.el")
+(load-file "~/Workspace/emacs-eat/eat.el")
+
+(pm/use 'elcord)
+(require 'elcord)
+(elcord-mode)
