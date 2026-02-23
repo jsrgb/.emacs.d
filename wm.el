@@ -24,7 +24,8 @@
       (puthash n (current-window-configuration) wm-workspaces))
     ;; Restore original state and set workspace 1 as current
     (set-window-configuration (gethash 1 wm-workspaces))
-    (setq wm-current-workspace 1)))
+    (setq wm-current-workspace 1)
+    (setq wm-workspace-lighter " [1]")))
 
 (defun wm-switch-to-workspace (n)
   "Switch to workspace N.
@@ -40,7 +41,8 @@ If workspace N exists, restore it. Otherwise show a message."
         (progn
           (set-window-configuration config)
           (setq wm-current-workspace n)
-          (message "Switched to workspace %d" n))
+          (setq wm-workspace-lighter (format " [%d]" n))
+          (force-mode-line-update t))
       (message "Workspace %d not defined" n))))
 
 (defun wm-save-workspace (n)
@@ -62,7 +64,7 @@ If workspace N exists, restore it. Otherwise show a message."
 (global-set-key (kbd "M-9") (lambda () (interactive) (wm-switch-to-workspace 9)))
 
 (global-set-key (kbd "M-!") (lambda () (interactive) (wm-save-workspace 1)))
-(global-set-key (kbd "M-@") (lambda () (interactive) (wm-save-workspace 2)))
+;;(global-set-key (kbd "M-@") (lambda () (interactive) (wm-save-workspace 2)))
 (global-set-key (kbd "M-#") (lambda () (interactive) (wm-save-workspace 3)))
 (global-set-key (kbd "M-$") (lambda () (interactive) (wm-save-workspace 4)))
 (global-set-key (kbd "M-%") (lambda () (interactive) (wm-save-workspace 5)))
@@ -70,6 +72,15 @@ If workspace N exists, restore it. Otherwise show a message."
 (global-set-key (kbd "M-&") (lambda () (interactive) (wm-save-workspace 7)))
 (global-set-key (kbd "M-*") (lambda () (interactive) (wm-save-workspace 8)))
 (global-set-key (kbd "M-(") (lambda () (interactive) (wm-save-workspace 9)))
+
+(defvar wm-workspace-lighter " [1]")
+
+(define-minor-mode wm-mode
+  "Display active workspace number in the mode line."
+  :global t
+  :lighter (:eval wm-workspace-lighter))
+
+(wm-mode 1)
 
 (wm--init-workspaces)
 

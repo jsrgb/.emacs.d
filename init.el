@@ -98,7 +98,7 @@
   (setq default-directory "C:/Workspace/"))
 
 (when (eq system-type 'darwin)
-  (set-face-attribute 'default nil :font "Iosevka-18")
+  (set-face-attribute 'default nil :font "Iosevka-20" :weight 'medium)
   (setq mac-command-modifier 'meta)
   (setq cfg-loc "~/.emacs.d/init.el"))
 
@@ -376,3 +376,16 @@
 (pm/use 'elcord)
 (require 'elcord)
 (elcord-mode)
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   '("d12b1d9b0498280f60e5ec92e5ecec4b5db5370d05e787bc7cc49eae6fb07bc0"
+     "2ab8cb6d21d3aa5b821fa638c118892049796d693d1e6cd88cb0d3d7c3ed07fc"
+     default))
+ '(eglot-ignored-server-capabilities
+   '(:documentHighlightProvider :documentLinkProvider :colorProvider
+                                :foldingRangeProvider
+                                :inlayHintProvider)))
