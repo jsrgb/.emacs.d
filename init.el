@@ -88,7 +88,10 @@
 
 (pm/use 'base16-theme)
 (pm/use 'doom-themes)
-(load-theme 'doom-opera t)
+
+(setq base16-theme-256-color-source 'colors)
+(setq base16-theme-distinct-fringe-background nil)
+(load-theme 'doom-zenburn t)
 
 (setq native-comp-async-report-warnings-errors 'silent)
 
@@ -296,6 +299,21 @@
 (setq dape-key-prefix (kbd "C-c C-d"))
 (require 'dape)
 (setq dape-buffer-window-arrangement 'right)
+(unless (display-graphic-p)
+  (setq dape-breakpoint-margin-string "●")
+  (set-face-foreground 'dape-breakpoint-face "red"))
+(defvar my/dape-info-keys-mode-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map dape-global-map)
+    map))
+
+(define-minor-mode my/dape-info-keys-mode
+  "Enable bare Dape keys in read-only Dape info buffers."
+  :init-value nil
+  :lighter nil
+  :keymap my/dape-info-keys-mode-map)
+
+(add-hook 'dape-info-parent-mode-hook #'my/dape-info-keys-mode)
 (let ((browser-debug-bridge "~/Workspace/browser-debug-bridge/browser-debug-bridge.el")
       (js-debug-root "~/Workspace/js-debug"))
   (when (file-exists-p browser-debug-bridge)
@@ -428,7 +446,10 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("d12b1d9b0498280f60e5ec92e5ecec4b5db5370d05e787bc7cc49eae6fb07bc0"
+   '("01a9797244146bbae39b18ef37e6f2ca5bebded90d9fe3a2f342a9e863aaa4fd"
+     "308fc0c8cee43c5fccf3efa360c9cdf7d6bbbebc5c2f76850f1b1c8ac8fbaca0"
+     "cb1f2c06ae381b505c9f2cf36ece1dd8e0a323d097ba3bbb19a842c3098c07f8"
+     "d12b1d9b0498280f60e5ec92e5ecec4b5db5370d05e787bc7cc49eae6fb07bc0"
      "2ab8cb6d21d3aa5b821fa638c118892049796d693d1e6cd88cb0d3d7c3ed07fc"
      default))
  '(eglot-ignored-server-capabilities
@@ -439,9 +460,10 @@
    '(apheleia base16-theme blamer browse-kill-ring consult corfu
               corfu-terminal dape diff-hl doom-themes elcord
               exec-path-from-shell glsl-mode gnu-elpa-keyring-update
-              json-mode magit move-text multiple-cursors orderless
-              org-roam-ui popon quelpa rg rust-mode term-keys
-              typescript-mode vertico wgsl-mode yaml-mode zig-mode)))
+              gruber-darker-theme json-mode magit move-text
+              multiple-cursors orderless org-roam-ui popon quelpa rg
+              rust-mode term-keys typescript-mode vertico wgsl-mode
+              yaml-mode zig-mode)))
 
 ;;;; Mouse scrolling in terminal emacs
 (unless (display-graphic-p)
