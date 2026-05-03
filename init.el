@@ -20,6 +20,8 @@
         
         ("gnu-devel" . "https://elpa.gnu.org/devel/") ;; for eglot bleeding edge
         ))
+(add-to-list 'package-archives
+             '("cselpa" . "https://elpa.thecybershadow.net/packages/"))
 (package-initialize)
 
 
@@ -32,14 +34,21 @@
   (setq package-enable-at-startup nil) ;; Prevent double-loading packages
   (package-initialize))
 
-(defvar pkg-refreshed nil)
+(defvar pm/missing-packages nil)
 
 (defun pm/use (package)
-  (when (not pkg-refreshed)
-    (setq pkg-refreshed t)
-    (package-refresh-contents))
-  (when (not (package-installed-p package))
-    (package-install package)))
+  (unless (package-installed-p package)
+    (add-to-list 'pm/missing-packages package)))
+
+(defun pm/install-missing-packages ()
+  "Refresh archives and install packages recorded as missing during startup."
+  (interactive)
+  (when pm/missing-packages
+    (package-refresh-contents)
+    (dolist (package (reverse pm/missing-packages))
+      (unless (package-installed-p package)
+        (package-install package))))
+  (setq pm/missing-packages nil))
 
 (pm/use 'exec-path-from-shell)
 
@@ -101,6 +110,28 @@
   (set-face-attribute 'default nil :font "Iosevka-20" :weight 'medium)
   (setq mac-command-modifier 'meta)
   (setq cfg-loc "~/.emacs.d/init.el"))
+
+(when (and (eq system-type 'darwin) (not window-system))
+  (defun my/pbcopy (text &optional _push)
+    "Copy TEXT to the macOS clipboard from terminal Emacs."
+    (let ((process-connection-type nil))
+      (let ((proc (start-process "pbcopy" nil "pbcopy")))
+        (process-send-string proc text)
+        (process-send-eof proc)))
+    text)
+
+  (defun my/pbpaste ()
+    "Read the macOS clipboard into terminal Emacs."
+    (when-let ((pbpaste (executable-find "pbpaste")))
+      (string-trim-right
+       (with-output-to-string
+         (with-current-buffer standard-output
+           (call-process pbpaste nil t nil))))))
+
+  (setq interprogram-cut-function #'my/pbcopy
+        interprogram-paste-function #'my/pbpaste
+        select-enable-clipboard t
+        save-interprogram-paste-before-kill t))
 
 (when (eq system-type 'gnu/linux)
   (setq cfg-loc "~/.emacs.d/init.el")
@@ -262,8 +293,24 @@
 ;; Debug
 ;;
 (pm/use 'dape)
+(setq dape-key-prefix (kbd "C-c C-d"))
+(require 'dape)
 (setq dape-buffer-window-arrangement 'right)
-(setq dape-key-prefix (kbd "C-x C-a"))
+(let ((browser-debug-bridge "~/Workspace/browser-debug-bridge/browser-debug-bridge.el")
+      (js-debug-root "~/Workspace/js-debug"))
+  (when (file-exists-p browser-debug-bridge)
+    (load-file browser-debug-bridge)
+    (setq bdb/js-debug-root js-debug-root)
+    (setq bdb/js-debug-server
+          (expand-file-name "src/dapDebugServer.js" bdb/js-debug-root))))
+(setq dape-configs
+      (cons
+       (cons 'project-debug
+             (bdb/make-chrome-launch-config
+              "http://127.0.0.1:5173"
+              default-directory
+              :userDataDir "/tmp/cdp-bridge-profile"))
+       (assq-delete-all 'project-debug (or dape-configs nil))))
 
 ;;
 ;; Kill-ring
@@ -288,10 +335,10 @@
 
 (pm/use 'rg)
 (rg-enable-default-bindings)
+(pm/use 'term-keys)
 
 ;; Basic org-roam setup - just the essentials
 (use-package org-roam
-  :ensure t
   :custom
   (org-roam-directory "~/Workspace/notes")
   :bind (("C-c n f" . org-roam-node-find)
@@ -300,7 +347,6 @@
   (org-roam-setup))
 
 (use-package org-roam-ui
-  :ensure t
   :after org-roam
   :config
   (setq org-roam-ui-sync-theme t
@@ -310,18 +356,15 @@
 ;; (load "~/.emacs.d/odin-mode.el")
 
 (use-package vertico
-  :ensure t
   :init (vertico-mode 1))
 
 (use-package orderless
-  :ensure t
   :init
   (setq completion-styles '(orderless basic)
         completion-category-defaults nil
         completion-category-overrides '((file (styles basic)))))
 
 (use-package consult
-  :ensure t
   :bind
   :config
   (global-set-key (kbd "M-p") 'consult-fd)
@@ -332,16 +375,22 @@
   )
 
 (use-package apheleia
-  :ensure t
   :config
   (add-hook 'prog-mode-hook #'apheleia-mode))
 
 (use-package corfu
-  :ensure t
   :init
   (global-corfu-mode 1)
   :custom
-  (corfu-auto nil))
+  (corfu-auto nil)
+  :config
+  (keymap-unset corfu-map "RET"))
+
+(use-package corfu-terminal
+  :if (not window-system)
+  :after corfu
+  :config
+  (corfu-terminal-mode 1))
 
 (add-hook 'markdown-mode-hook (lambda () (corfu-mode -1)))
 (add-hook 'text-mode-hook (lambda () (corfu-mode -1)))
@@ -373,9 +422,6 @@
 (load-file "~/.emacs.d/wm.el")
 (load-file "~/Workspace/emacs-eat/eat.el")
 
-(pm/use 'elcord)
-(require 'elcord)
-(elcord-mode)
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -388,4 +434,28 @@
  '(eglot-ignored-server-capabilities
    '(:documentHighlightProvider :documentLinkProvider :colorProvider
                                 :foldingRangeProvider
-                                :inlayHintProvider)))
+                                :inlayHintProvider))
+ '(package-selected-packages
+   '(apheleia base16-theme blamer browse-kill-ring consult corfu
+              corfu-terminal dape diff-hl doom-themes elcord
+              exec-path-from-shell glsl-mode gnu-elpa-keyring-update
+              json-mode magit move-text multiple-cursors orderless
+              org-roam-ui popon quelpa rg rust-mode term-keys
+              typescript-mode vertico wgsl-mode yaml-mode zig-mode)))
+
+;;;; Mouse scrolling in terminal emacs
+(unless (display-graphic-p)
+  ;; activate mouse-based scrolling
+  (xterm-mouse-mode 1)
+  (global-set-key (kbd "<mouse-4>") 'scroll-down-line)
+  (global-set-key (kbd "<mouse-5>") 'scroll-up-line)
+  )
+
+(unless (package-installed-p 'popon)
+  (add-to-list 'pm/missing-packages 'popon))
+
+(unless (package-installed-p 'corfu-terminal)
+  (add-to-list 'pm/missing-packages 'corfu-terminal))
+
+(require 'term-keys)
+(term-keys-mode t)
