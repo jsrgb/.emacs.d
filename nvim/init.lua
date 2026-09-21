@@ -1,5 +1,6 @@
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
+vim.g.editorconfig = true
 
 -- Editing
 vim.opt.expandtab = true
@@ -32,6 +33,25 @@ vim.opt.wrap = false
 vim.opt.mouse = "a"
 vim.opt.updatetime = 250
 vim.opt.timeoutlen = 400
+
+-- Use common web defaults when a project does not provide .editorconfig.
+-- Neovim applies EditorConfig after FileType autocommands, so project settings win.
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = {
+    "javascript",
+    "javascriptreact",
+    "json",
+    "jsonc",
+    "typescript",
+    "typescriptreact",
+  },
+  callback = function()
+    vim.opt_local.expandtab = true
+    vim.opt_local.shiftwidth = 2
+    vim.opt_local.softtabstop = 2
+    vim.opt_local.tabstop = 2
+  end,
+})
 
 -- nvim 0.12 package manager
 vim.pack.add({
