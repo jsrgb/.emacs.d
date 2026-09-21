@@ -143,13 +143,16 @@ cmp.setup({
     end,
   },
   mapping = cmp.mapping.preset.insert({
-    ["<C-.>"] = cmp.mapping.complete(),
     ["<CR>"] = cmp.mapping.confirm({ select = true }),
   }),
   sources = {
     { name = "nvim_lsp" },
   },
 })
+
+vim.keymap.set("n", "<C-n>",
+  "a<Cmd>lua require('cmp').complete()<CR>",
+  { desc = "Enter Insert mode and show completion suggestions" })
 
 require("mini.move").setup({
   mappings = {
