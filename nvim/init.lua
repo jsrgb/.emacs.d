@@ -134,12 +134,16 @@ vim.keymap.set("n", "<M-s>", fzf.blines,
 -- Completion
 local cmp = require("cmp")
 cmp.setup({
+  completion = {
+    autocomplete = false,
+  },
   snippet = {
     expand = function(args)
       vim.snippet.expand(args.body)
     end,
   },
   mapping = cmp.mapping.preset.insert({
+    ["<C-.>"] = cmp.mapping.complete(),
     ["<CR>"] = cmp.mapping.confirm({ select = true }),
   }),
   sources = {
