@@ -114,19 +114,14 @@ vim.keymap.set("n", "<M-s>", fzf.blines,
 -- Completion
 local cmp = require("cmp")
 cmp.setup({
-  preselect = cmp.PreselectMode.None,
   snippet = {
     expand = function(args)
       vim.snippet.expand(args.body)
     end,
   },
-  mapping = {
-    ["<C-Space>"] = cmp.mapping.complete(),
-    ["<C-n>"] = cmp.mapping.select_next_item(),
-    ["<C-p>"] = cmp.mapping.select_prev_item(),
-    ["<C-y>"] = cmp.mapping.confirm({ select = false }),
-    ["<CR>"] = cmp.mapping.confirm({ select = false }),
-  },
+  mapping = cmp.mapping.preset.insert({
+    ["<CR>"] = cmp.mapping.confirm({ select = true }),
+  }),
   sources = {
     { name = "nvim_lsp" },
   },
