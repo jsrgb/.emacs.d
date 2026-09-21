@@ -15,7 +15,8 @@ vim.opt.clipboard = "unnamedplus"
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
 vim.opt.inccommand = "split"
-vim.opt.completeopt = { "menuone", "noselect", "popup" }
+vim.opt.completeopt = { "menuone", "noselect", "popup", "fuzzy" }
+vim.opt.pumheight = 10
 
 -- Windows and display
 vim.opt.number = true
@@ -202,7 +203,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
         group = completion_group,
         buffer = event.buf,
       })
-      vim.api.nvim_create_autocmd("InsertCharPre", {
+      vim.api.nvim_create_autocmd("TextChangedI", {
         group = completion_group,
         buffer = event.buf,
         callback = function()
