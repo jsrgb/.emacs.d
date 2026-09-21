@@ -154,7 +154,7 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 -- LSP
-vim.lsp.enable({ "rust_analyzer", "vtsls" })
+vim.lsp.enable({ "rust_analyzer", "tsc" })
 
 vim.diagnostic.config({
   severity_sort = true,
