@@ -15,7 +15,7 @@ vim.opt.clipboard = "unnamedplus"
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
 vim.opt.inccommand = "split"
-vim.opt.completeopt = { "menuone", "noselect", "popup", "fuzzy" }
+vim.opt.completeopt = { "menu", "menuone", "noselect" }
 vim.opt.pumheight = 10
 
 -- Windows and display
@@ -40,6 +40,8 @@ vim.pack.add({
   { src = "https://github.com/ibhagwan/fzf-lua" },
   { src = "https://github.com/nvim-treesitter/nvim-treesitter" },
   { src = "https://github.com/neovim/nvim-lspconfig" },
+  { src = "https://github.com/hrsh7th/nvim-cmp" },
+  { src = "https://github.com/hrsh7th/cmp-nvim-lsp" },
   { src = "https://github.com/phha/zenburn.nvim" },
   { src = "https://github.com/folke/which-key.nvim" },
 })
@@ -109,6 +111,27 @@ vim.keymap.set("n", "<M-F>", fzf.live_grep,
 vim.keymap.set("n", "<M-s>", fzf.blines,
   { desc = "Search current buffer" })
 
+-- Completion
+local cmp = require("cmp")
+cmp.setup({
+  preselect = cmp.PreselectMode.None,
+  snippet = {
+    expand = function(args)
+      vim.snippet.expand(args.body)
+    end,
+  },
+  mapping = {
+    ["<C-Space>"] = cmp.mapping.complete(),
+    ["<C-n>"] = cmp.mapping.select_next_item(),
+    ["<C-p>"] = cmp.mapping.select_prev_item(),
+    ["<C-y>"] = cmp.mapping.confirm({ select = false }),
+    ["<CR>"] = cmp.mapping.confirm({ select = false }),
+  },
+  sources = {
+    { name = "nvim_lsp" },
+  },
+})
+
 require("mini.move").setup({
   mappings = {
     left = "",
@@ -155,6 +178,9 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 -- LSP
+vim.lsp.config("*", {
+  capabilities = require("cmp_nvim_lsp").default_capabilities(),
+})
 vim.lsp.enable({ "rust_analyzer", "tsc" })
 
 vim.diagnostic.config({
@@ -170,7 +196,6 @@ vim.diagnostic.config({
 })
 
 local format_group = vim.api.nvim_create_augroup("user.lsp-format", {})
-local completion_group = vim.api.nvim_create_augroup("user.lsp-completion", {})
 
 vim.api.nvim_create_autocmd("LspAttach", {
   callback = function(event)
@@ -194,23 +219,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
     end, vim.tbl_extend("force", map_opts, { desc = "Format buffer" }))
     vim.keymap.set("n", "<M-O>", fzf.lsp_document_symbols,
       vim.tbl_extend("force", map_opts, { desc = "Document symbols" }))
-
-    if client:supports_method("textDocument/completion") then
-      vim.lsp.completion.enable(true, client.id, event.buf, {
-        autotrigger = false,
-      })
-      vim.api.nvim_clear_autocmds({
-        group = completion_group,
-        buffer = event.buf,
-      })
-      vim.api.nvim_create_autocmd("TextChangedI", {
-        group = completion_group,
-        buffer = event.buf,
-        callback = function()
-          vim.lsp.completion.get()
-        end,
-      })
-    end
 
     if client:supports_method("textDocument/formatting") then
       vim.api.nvim_clear_autocmds({ group = format_group, buffer = event.buf })
